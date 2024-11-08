@@ -3,10 +3,7 @@ import json
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
-with open("data/config.json", "r", encoding='utf-8') as file:
-    data = json.load(file)
-    subscription = data["mailing list"]["subscription"]
-    admins = data['Admins']
+from config import read_config
 
 user_keyboard = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text='📩Получить рассылку')],
@@ -17,7 +14,8 @@ user_keyboard = ReplyKeyboardMarkup(keyboard=[
 
 admin_keyboard = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text='🫡Изменить админов')],
-    [KeyboardButton(text='✏️Изменить рассылку')]],
+    [KeyboardButton(text='✏️Изменить рассылку')],
+    [KeyboardButton(text='Выйти')]],
                            resize_keyboard=True)
 
 
@@ -31,7 +29,16 @@ edit_mailing_list = ReplyKeyboardMarkup(keyboard=[
 
 async def inline_subscribes():
     keyboard = InlineKeyboardBuilder()
-    for user in subscription:
-        keyboard.add(InlineKeyboardButton(text=user, url=subscription[user]))
+    for user in read_config()["mailing list"]:
+        keyboard.add(InlineKeyboardButton(text=user, url=read_config()["mailing list"][user]))
     keyboard.add(InlineKeyboardButton(text='Проверить подписки', callback_data='check'))
+    return keyboard.adjust(1).as_markup()
+
+
+async def inline_admins():
+    keyboard = InlineKeyboardBuilder()
+    for user in read_config()["Admins"]:
+        keyboard.add(InlineKeyboardButton(text=user, callback_data=f'user: {user}'))
+    keyboard.add(InlineKeyboardButton(text='Добавить', callback_data='append'))
+    keyboard.add(InlineKeyboardButton(text='Назад', callback_data='back'))
     return keyboard.adjust(1).as_markup()
