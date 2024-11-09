@@ -19,18 +19,11 @@ admin_keyboard = ReplyKeyboardMarkup(keyboard=[
                            resize_keyboard=True)
 
 
-edit_mailing_list = ReplyKeyboardMarkup(keyboard=[
-    [KeyboardButton(text='👩🏻‍🦳Подписки')],
-    [KeyboardButton(text='🗂Ссылка на материалы')],
-    [KeyboardButton(text='⏰Дата рассылки')]
-],
-                           resize_keyboard=True)
-
-
 async def inline_subscribes():
     keyboard = InlineKeyboardBuilder()
-    for user in read_config()["mailing list"]:
-        keyboard.add(InlineKeyboardButton(text=user, url=read_config()["mailing list"][user]))
+    subscription = read_config()["mailing list"]['subscription']
+    for user in subscription:
+        keyboard.add(InlineKeyboardButton(text=user, url=subscription[user]))
     keyboard.add(InlineKeyboardButton(text='Проверить подписки', callback_data='check'))
     return keyboard.adjust(1).as_markup()
 
@@ -40,5 +33,4 @@ async def inline_admins():
     for user in read_config()["Admins"]:
         keyboard.add(InlineKeyboardButton(text=user, callback_data=f'user: {user}'))
     keyboard.add(InlineKeyboardButton(text='Добавить', callback_data='append'))
-    keyboard.add(InlineKeyboardButton(text='Назад', callback_data='back'))
     return keyboard.adjust(1).as_markup()

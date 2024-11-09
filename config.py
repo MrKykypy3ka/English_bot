@@ -7,6 +7,5 @@ def read_config():
 
 
 def write_config(data):
-    print(data)
     with open("data/config.json", "w", encoding='utf-8') as file:
-        json.dump(data, file)
+        json.dump(data, file, ensure_ascii=True, indent=4)
