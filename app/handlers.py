@@ -4,12 +4,16 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 from aiogram.exceptions import TelegramBadRequest
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
 from config import *
 import app.keyboards as kb
 from datetime import date, datetime
 
+from create_bot import send_scheduled_broadcast
 
 router = Router()
+scheduler = AsyncIOScheduler()
 
 
 class Admin(StatesGroup):
@@ -24,7 +28,10 @@ class MailingList(StatesGroup):
 
 @router.message(CommandStart())
 async def cmd_start(message: Message):
-    await message.reply(f'Привет!{message.from_user.id} {message.from_user.username}',
+    write_user(message.from_user.id)
+    await message.reply(
+f"""Привет {message.from_user.username}! На связи бот @engncity
+Чтобы получить материалы, Вам нужно подписаться на меня и моих коллег.""",
                         reply_markup=kb.user_keyboard)
 
 
@@ -49,7 +56,8 @@ async def edit_admins(message: Message):
 
 @router.message(F.text == '📩Получить рассылку')
 async def set_message_list(message: Message):
-    await message.answer(f'Для получения материалов необходимо быть подписанным на следующие каналы:',
+    await message.answer(f"""Для получения материалов необходимо быть подписанным на следующие каналы:
+Не забудьте нажать кнопку «Проверить подписки»""",
                         reply_markup=await kb.inline_subscribes())
 
 
@@ -60,16 +68,25 @@ async def back(message: Message):
 
 @router.callback_query(F.data == 'check')
 async def subscribe(callback: CallbackQuery):
-    user_id = callback.from_user.id
-    print(user_id)
     try:
-        for chanel in read_config()["mailing list"]["subscription"]:
+        user_id = callback.from_user.id
+        subscription = read_config()["mailing list"]["subscription"]
+        print(subscription)
+        for chanel in subscription:
+            print(chanel)
             member = await callback.message.bot.get_chat_member(chat_id=chanel, user_id=user_id)
-            print(member.status)
+            print(1)
+            date_m, time_m = read_config()["mailing list"]["date"].split()
+            print(date_m, time_m)
+            y, m, d = date_m.split('-')
+            h, m, _ = time_m.split(':')
             if member.status in ["member", "administrator", "creator"]:
-                await callback.message.answer("Вы подписаны на канал!")
+                await callback.message.answer(f"""Спасибо за подписки 💜
+Бот пришлет материалы {d}.{m}.{y} в {h}:{m} 
+❗️Не отменяйте подписки, иначе бот не пришлет Вам материалы 
+""")
             else:
-                await callback.message.answer("Вы не подписаны на канал. Пожалуйста, подпишитесь для доступа.")
+                await callback.message.answer("Вы не подписаны на каналы. Пожалуйста, подпишитесь для доступа к рассылке.")
     except TelegramBadRequest as e:
         print(e)
         await callback.message.answer("e")
@@ -122,11 +139,11 @@ async def write_link(message: Message, state: FSMContext):
     await state.update_data(link=message.text)
     await state.set_state(MailingList.data)
     await message.answer("""Введите дату рассылки:\n
-формат даты: Год.Месяц.День""")
+формат даты: Год.Месяц.День.Час.Минуты""")
 
 
 @router.message(MailingList.data)
-async def add_admin(message: Message, state: FSMContext):
+async def edit_message_list(message: Message, state: FSMContext):
     await state.update_data(date=message.text)
     config = read_config()
     data = await state.get_data()
@@ -143,7 +160,10 @@ async def add_admin(message: Message, state: FSMContext):
             raise
         config["mailing list"]["date"] = str(custom_date)
         write_config(config)
+        scheduler.add_job(send_scheduled_broadcast, 'date', run_date=str(custom_date))
         await message.answer(f'Рассылка настроена', reply_markup=kb.admin_keyboard)
     except Exception:
         await message.answer('Некорректные данные')
     await state.clear()
+
+
