@@ -22,3 +22,13 @@ def write_user(user):
         users.append(str(user))
     with open("data/users.txt", "w", encoding="utf-8") as f:
         f.write(f'{"\n".join(users)}\n')
+
+
+async def check_subscriptions(callback):
+    user_id = callback.from_user.id
+    subscription = read_config()["newsletter"]["subscription"]
+    for chanel in subscription:
+        member = await callback.message.bot.get_chat_member(chat_id="@"+chanel, user_id=user_id)
+        if member.status not in ["member", "administrator", "creator"]:
+            return False
+    return True
