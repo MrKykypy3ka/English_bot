@@ -68,9 +68,10 @@ async def set_message_list(message: Message):
 
 @router.message(F.text == '📰Новости')
 async def set_message_list(message: Message):
-    y, mo, d, h, mi, s = re.split(r"[- :]", read_config()['newsletter']['date'])
-    if datetime(*list(map(int, [y, mo, d, h, mi, s]))) > datetime.now():
-        await message.answer(f"""Следующая рассылка запланирована на {d}.{mo}.{y} в {h}:{mi}""",
+    y, mo, d, h, mi, s = map(int, re.split(r"[- :]", read_config()['newsletter']['date']))
+    if datetime(*list([y, mo, d, h, mi, s])) > datetime.now():
+        y, mo, d, h, mi, s = re.split(r"[- :]", str(datetime(y, mo, d, h, mi, s) + timedelta(hours=3)))
+        await message.answer(f"""Следующая рассылка запланирована на {d}.{mo}.{y} в {h}:{mi} по МСК""",
                              reply_markup=kb.user_keyboard)
     else:
         await message.answer(f"""Рассылка ещё не запланирована.""",
@@ -102,8 +103,10 @@ async def back(message: Message):
 async def subscribe(callback: CallbackQuery):
     try:
         if await check_subscriptions(callback):
-            y, mo, d, h, mi, s = re.split(r"[- :]", read_config()['newsletter']['date'])
+            y, mo, d, h, mi, s = map(int, re.split(r"[- :]", read_config()['newsletter']['date']))
+            print(str(datetime(y, mo, d, h, mi, s) + timedelta(hours=3)))
             write_user(callback.from_user.id)
+            y, mo, d, h, mi, s = re.split(r"[- :]", str(datetime(y, mo, d, h, mi, s) + timedelta(hours=3)))
             await callback.message.answer(
                 f"""Спасибо за подписки 💜
 Бот пришлет материалы {d}.{mo}.{y} в {h}:{mi}
@@ -161,7 +164,7 @@ async def write_link(message: Message, state: FSMContext):
     await state.update_data(link=message.text)
     await state.set_state(Newsletter.data)
     await message.answer("""Введите дату рассылки:\n
-формат даты: Год Месяц День Час Минуты""")
+Формат даты (МСК): Год Месяц День Час Минуты""")
 
 
 @router.message(Newsletter.data)
@@ -178,7 +181,8 @@ async def edit_message_list(message: Message, state: FSMContext):
         config["newsletter"]["link"] = data['link']
         today = datetime.now()
         y, mo, d, h, mi = list(map(int, (data['date']).split(' ')))
-        custom_date = datetime(y, mo, d, h, mi)
+        custom_date = datetime(y, mo, d, h, mi) - timedelta(hours=3)
+        y, mo, d, h, mi = data['date'].split(' ')
         if custom_date < today:
             raise
         config["newsletter"]["date"] = str(custom_date)
@@ -189,7 +193,7 @@ async def edit_message_list(message: Message, state: FSMContext):
             for user_id in users:
                 await message.bot.send_message(text=f"""УРА! Готовы новые материалы для рассылки!
 Подпишись на новую рассылку которая запланирована на:
-{d}.{mo}.{y} в {h}:{mi}""",
+{d}.{mo}.{y} в {h}:{mi} по МСК""",
                                                chat_id=user_id)
         with open("data/users.txt", "w", encoding='utf-8') as f:
             f.write('')
@@ -208,6 +212,11 @@ async def sand_all(message: Message):
     scheduler.add_job(send_newsletter_everyone, 'date', run_date=str(datetime.now() + timedelta(seconds=5)))
     await message.answer(f"""Через 5 секунд придёт рассылка""")
 
+
+@router.message(F.text == '️❓Узнать количество людей оформивших подписку')
+async def check_people(message: Message):
+    with open("data/users.txt", 'r', encoding='utf-8') as f:
+        await message.answer(f"{len(f.readlines())} Подписалось на рассылку")
 
 # @router.message(F.text == 'Отправить рассылку конкретному человеку')
 # async def sand_all(message: Message, state: FSMContext):

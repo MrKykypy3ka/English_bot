@@ -1,9 +1,10 @@
 from aiogram import Bot, Dispatcher
 from functions import read_user, read_config
-import json
+from dotenv import load_dotenv
+import os
 
-with open("data/config.json", "r") as file:
-    API_TOKEN = json.load(file)["API_TOKEN"]
+load_dotenv()
+API_TOKEN = os.getenv("API_TOKEN")
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
@@ -34,10 +35,9 @@ async def send_newsletter_everyone():
                 await bot.send_message(text="Извините, но вы не подписаны на каналы😒",
                                        chat_id=user_id)
                 await bot.send_message(text=f"{user_id} не получил рассылку из-за того что не подписан на канал",
-                                       chat_id='941560022')
-        except Exception:
-            await bot.send_message(text=f"Не удалось отправить подписку для {user_id}",
-                                   chat_id='941560022')
+                                       chat_id='1425132540')
+        except Exception as e:
+            print(e)
 
 
 async def send_newsletter_one(user_id):
@@ -51,7 +51,6 @@ async def send_newsletter_one(user_id):
             await bot.send_message(text="Извините, но вы не подписаны на каналы😒",
                                    chat_id=user_id)
             await bot.send_message(text=f"{user_id} не получил рассылку из-за того что не подписан на канал",
-                                   chat_id='941560022')
+                                   chat_id='1425132540')
     except Exception:
-        await bot.send_message(text=f"Не удалось отправить подписку для {user_id}",
-                               chat_id='941560022')
+        print(e)
