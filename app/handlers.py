@@ -1,7 +1,7 @@
 import re
 from aiogram import F, Router
 from aiogram.filters import CommandStart
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 from aiogram.exceptions import TelegramBadRequest
@@ -121,9 +121,12 @@ async def subscribe(callback: CallbackQuery):
 @router.callback_query(F.data.startswith('user'))
 async def del_admin(callback: CallbackQuery):
     data = read_config()
-    data["Admins"].remove(callback.data.split(": ")[1])
-    write_config(data)
-    await callback.message.answer(f'Админ удёлён', reply_markup=await kb.inline_admins())
+    if callback.data.split(": ")[1] not in ["Mrkykypy3a", "lilith_sl"]:
+        data["Admins"].remove(callback.data.split(": ")[1])
+        write_config(data)
+        await callback.message.answer(f'Админ удёлён', reply_markup=await kb.inline_admins())
+    else:
+        await callback.message.answer(f'Их нельзя удалять!', reply_markup=await kb.inline_admins())
 
 
 @router.callback_query(F.data == 'append')
@@ -217,6 +220,16 @@ async def sand_all(message: Message):
 async def check_people(message: Message):
     with open("data/users.txt", 'r', encoding='utf-8') as f:
         await message.answer(f"{len(f.readlines())} Подписалось на рассылку")
+
+
+@router.message(F.text == 'Выгрузить')
+async def backup(message: Message):
+    if message.from_user.username in read_config()["Admins"]:
+        await message.answer_document(document=FSInputFile(path='data/users.txt'))
+        await message.answer_document(document=FSInputFile(path='data/newsletter.json'))
+    else:
+        await message.answer(f'Ты не админ😡')
+
 
 # @router.message(F.text == 'Отправить рассылку конкретному человеку')
 # async def sand_all(message: Message, state: FSMContext):
