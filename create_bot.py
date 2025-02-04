@@ -52,5 +52,5 @@ async def send_newsletter_one(user_id):
                                    chat_id=user_id)
             await bot.send_message(text=f"{user_id} не получил рассылку из-за того что не подписан на канал",
                                    chat_id='1425132540')
-    except Exception:
+    except Exception as e:
         print(e)

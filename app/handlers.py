@@ -186,18 +186,21 @@ async def edit_message_list(message: Message, state: FSMContext):
         y, mo, d, h, mi = list(map(int, (data['date']).split(' ')))
         custom_date = datetime(y, mo, d, h, mi) - timedelta(hours=3)
         y, mo, d, h, mi = data['date'].split(' ')
+        await message.answer(f'{custom_date}, {today}')
         if custom_date < today:
-            raise
+            raise "Некорректная дата"
         config["newsletter"]["date"] = str(custom_date)
         write_config(config)
         print(data['date'])
         with open("data/users.txt", "r", encoding='utf-8') as f:
             users = list(map(str.strip, f.readlines()))
             for user_id in users:
-                await message.bot.send_message(text=f"""УРА! Готовы новые материалы для рассылки!
+                try:
+                    await message.bot.send_message(text=f"""УРА! Готовы новые материалы для рассылки!
 Подпишись на новую рассылку которая запланирована на:
-{d}.{mo}.{y} в {h}:{mi} по МСК""",
-                                               chat_id=user_id)
+{d}.{mo}.{y} в {h}:{mi} по МСК""", chat_id=user_id)
+                except:
+                    await message.answer(f'Пидорас с id {user_id} кинул бота в ЧС')
         with open("data/users.txt", "w", encoding='utf-8') as f:
             f.write('')
 
@@ -205,7 +208,6 @@ async def edit_message_list(message: Message, state: FSMContext):
         scheduler.add_job(send_newsletter_everyone, 'date', run_date=str(custom_date))
         await message.answer(f'Рассылка настроена', reply_markup=kb.admin_keyboard)
     except Exception as e:
-        print(e)
         await message.answer('Некорректные данные')
     await state.clear()
 
@@ -237,13 +239,13 @@ async def backup(message: Message):
 #     await message.answer("Введите логин человека, которому нужно отправить рассылку:")
 
 
-@router.message(People.login)
-async def send_newsletter(message: Message, state: FSMContext):
-    scheduler.add_job(send_newsletter_one, 'date',
-                      run_date=str(datetime.now() + timedelta(seconds=5)),
-                      args=[message.text])
-    await message.answer(f"""Через 5 секунд придёт рассылка""")
-    await state.clear()
+# @router.message(People.login)
+# async def send_newsletter(message: Message, state: FSMContext):
+#     scheduler.add_job(send_newsletter_one, 'date',
+#                       run_date=str(datetime.now() + timedelta(seconds=5)),
+#                       args=[message.text])
+#     await message.answer(f"""Через 5 секунд придёт рассылка""")
+#     await state.clear()
 
 
 @router.message()

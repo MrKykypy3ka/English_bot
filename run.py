@@ -10,7 +10,8 @@ logging.basicConfig(level=logging.INFO)
 async def main():
     dp.include_router(router)
     scheduler.start()
-    scheduler.add_job(send_newsletter_everyone, 'date', run_date=read_config()['newsletter']['date'])
+    if read_config()['newsletter']['date']:
+        scheduler.add_job(send_newsletter_everyone, 'date', run_date=read_config()['newsletter']['date'])
     await dp.start_polling(bot)
 
 
