@@ -1,0 +1,178 @@
+Index: run.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import asyncio\r\nimport logging\r\nfrom create_bot import dp, bot, send_newsletter_everyone\r\nfrom app.handlers import router, scheduler\r\nfrom functions import read_config\r\n\r\nlogging.basicConfig(level=logging.INFO)\r\n\r\n\r\nasync def main():\r\n    dp.include_router(router)\r\n    scheduler.start()\r\n    scheduler.add_job(send_newsletter_everyone, 'date', run_date=read_config()['newsletter']['date'])\r\n    await dp.start_polling(bot)\r\n\r\n\r\nif __name__ == '__main__':\r\n    try:\r\n        asyncio.run(main())\r\n    except KeyboardInterrupt:\r\n        print('Exit')\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/run.py b/run.py
+--- a/run.py	(revision 973c858a836bd9c333be2a081dea2ae96a138d39)
++++ b/run.py	(date 1738282270890)
+@@ -10,7 +10,8 @@
+ async def main():
+     dp.include_router(router)
+     scheduler.start()
+-    scheduler.add_job(send_newsletter_everyone, 'date', run_date=read_config()['newsletter']['date'])
++    if read_config()['newsletter']['date']:
++        scheduler.add_job(send_newsletter_everyone, 'date', run_date=read_config()['newsletter']['date'])
+     await dp.start_polling(bot)
+ 
+ 
+Index: app/keyboards.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import json\r\n\r\nfrom aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton\r\nfrom aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder\r\n\r\nfrom functions import read_config\r\n\r\nuser_keyboard = ReplyKeyboardMarkup(keyboard=[\r\n    [KeyboardButton(text='\uD83D\uDCE9Получить рассылку')],\r\n    [KeyboardButton(text='\uD83D\uDCF0Новости'), KeyboardButton(text='ℹ\uFE0FИнфо')]\r\n],\r\n                           resize_keyboard=True,\r\n                           input_field_placeholder='Меню ниже')\r\n\r\nadmin_keyboard = ReplyKeyboardMarkup(keyboard=[\r\n    [KeyboardButton(text='\uD83E\uDEE1Изменить админов')],\r\n    [KeyboardButton(text='✏\uFE0FИзменить рассылку')],\r\n    [KeyboardButton(text='\uFE0F\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC66\u200D\uD83D\uDC66Отправить рассылку всем (в случае если произошёл сбой)')],\r\n    [KeyboardButton(text='\uFE0F❓Узнать количество людей оформивших подписку')],\r\n    # [KeyboardButton(text='Отправить рассылку конкретному человеку')],\r\n    [KeyboardButton(text='Выйти')]],\r\n                           resize_keyboard=True)\r\n\r\n\r\nasync def inline_subscribes():\r\n    keyboard = InlineKeyboardBuilder()\r\n    subscription = read_config()[\"newsletter\"]['subscription']\r\n    for user in subscription:\r\n        keyboard.add(InlineKeyboardButton(text=user, url=subscription[user]))\r\n    keyboard.add(InlineKeyboardButton(text='Проверить подписки и подписаться на рассылку', callback_data='check'))\r\n    return keyboard.adjust(1).as_markup()\r\n\r\n\r\nasync def inline_admins():\r\n    keyboard = InlineKeyboardBuilder()\r\n    for user in read_config()[\"Admins\"]:\r\n        keyboard.add(InlineKeyboardButton(text=user, callback_data=f'user: {user}'))\r\n    keyboard.add(InlineKeyboardButton(text='Добавить', callback_data='append'))\r\n    return keyboard.adjust(1).as_markup()
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/keyboards.py b/app/keyboards.py
+--- a/app/keyboards.py	(revision 973c858a836bd9c333be2a081dea2ae96a138d39)
++++ b/app/keyboards.py	(date 1738282761171)
+@@ -15,7 +15,7 @@
+ admin_keyboard = ReplyKeyboardMarkup(keyboard=[
+     [KeyboardButton(text='🫡Изменить админов')],
+     [KeyboardButton(text='✏️Изменить рассылку')],
+-    [KeyboardButton(text='️👨‍👩‍👦‍👦Отправить рассылку всем (в случае если произошёл сбой)')],
++    # [KeyboardButton(text='️👨‍👩‍👦‍👦Отправить рассылку всем (в случае если произошёл сбой)')],
+     [KeyboardButton(text='️❓Узнать количество людей оформивших подписку')],
+     # [KeyboardButton(text='Отправить рассылку конкретному человеку')],
+     [KeyboardButton(text='Выйти')]],
+Index: .idea/English_bot.iml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<module type=\"PYTHON_MODULE\" version=\"4\">\r\n  <component name=\"NewModuleRootManager\">\r\n    <content url=\"file://$MODULE_DIR$\">\r\n      <excludeFolder url=\"file://$MODULE_DIR$/.venv\" />\r\n    </content>\r\n    <orderEntry type=\"inheritedJdk\" />\r\n    <orderEntry type=\"sourceFolder\" forTests=\"false\" />\r\n  </component>\r\n</module>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/English_bot.iml b/.idea/English_bot.iml
+--- a/.idea/English_bot.iml	(revision 973c858a836bd9c333be2a081dea2ae96a138d39)
++++ b/.idea/English_bot.iml	(date 1738202042844)
+@@ -4,7 +4,7 @@
+     <content url="file://$MODULE_DIR$">
+       <excludeFolder url="file://$MODULE_DIR$/.venv" />
+     </content>
+-    <orderEntry type="inheritedJdk" />
++    <orderEntry type="jdk" jdkName="Python 3.12 (BGPU_bot)" jdkType="Python SDK" />
+     <orderEntry type="sourceFolder" forTests="false" />
+   </component>
+ </module>
+\ No newline at end of file
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"Black\">\r\n    <option name=\"sdkName\" value=\"Python 3.13 (English_bot)\" />\r\n  </component>\r\n  <component name=\"ProjectRootManager\" version=\"2\" project-jdk-name=\"Python 3.13 (English_bot)\" project-jdk-type=\"Python SDK\" />\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+--- a/.idea/misc.xml	(revision 973c858a836bd9c333be2a081dea2ae96a138d39)
++++ b/.idea/misc.xml	(date 1738202042867)
+@@ -3,5 +3,5 @@
+   <component name="Black">
+     <option name="sdkName" value="Python 3.13 (English_bot)" />
+   </component>
+-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.13 (English_bot)" project-jdk-type="Python SDK" />
++  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.12 (BGPU_bot)" project-jdk-type="Python SDK" />
+ </project>
+\ No newline at end of file
+Index: data/users.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>1425132540\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/data/users.txt b/data/users.txt
+--- a/data/users.txt	(revision 973c858a836bd9c333be2a081dea2ae96a138d39)
++++ b/data/users.txt	(date 1738281432676)
+@@ -1,1 +1,8 @@
+ 1425132540
++941560022
++675236792
++440786706
++6157898987
++1235998165
++800619022
++453618534
+Index: app/handlers.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import re\r\nfrom aiogram import F, Router\r\nfrom aiogram.filters import CommandStart\r\nfrom aiogram.types import Message, CallbackQuery, FSInputFile\r\nfrom aiogram.fsm.state import StatesGroup, State\r\nfrom aiogram.fsm.context import FSMContext\r\nfrom aiogram.exceptions import TelegramBadRequest\r\nfrom apscheduler.schedulers.asyncio import AsyncIOScheduler\r\n\r\nfrom functions import *\r\nimport app.keyboards as kb\r\nfrom datetime import datetime, timedelta\r\n\r\nfrom create_bot import send_newsletter_everyone, send_newsletter_one\r\n\r\nrouter = Router()\r\nscheduler = AsyncIOScheduler()\r\n\r\n\r\nclass Admin(StatesGroup):\r\n    login = State()\r\n\r\n\r\nclass Newsletter(StatesGroup):\r\n    subscription = State()\r\n    link = State()\r\n    data = State()\r\n\r\n\r\nclass People(StatesGroup):\r\n    login = State()\r\n\r\n\r\n@router.message(CommandStart())\r\nasync def cmd_start(message: Message):\r\n    await message.reply(\r\n        f\"\"\"Привет {message.from_user.username}! На связи бот @engncity\r\nЧтобы получить материалы, Вам нужно подписаться на меня и моих коллег.\"\"\",\r\n        reply_markup=kb.user_keyboard)\r\n\r\n\r\n@router.message(F.text.lower() == 'admin')\r\nasync def admin_menu(message: Message):\r\n    if message.from_user.username in read_config()[\"Admins\"]:\r\n        await message.answer(f'Для изменения',\r\n                             reply_markup=kb.admin_keyboard)\r\n    else:\r\n        await message.answer(f'Ты не админ\uD83D\uDE21')\r\n\r\n\r\n@router.message(F.text == '\uD83E\uDEE1Изменить админов')\r\nasync def edit_admins(message: Message):\r\n    if message.from_user.username in read_config()[\"Admins\"]:\r\n        await message.answer(f'Админы:\\n'\r\n                             f'Нажмите на админа чтобы его удалить.',\r\n                             reply_markup=await kb.inline_admins())\r\n    else:\r\n        await message.answer(f'Ты не админ\uD83D\uDE21')\r\n\r\n\r\n@router.message(F.text == '\uD83D\uDCE9Получить рассылку')\r\nasync def set_message_list(message: Message):\r\n    await message.answer(f\"\"\"Для получения материалов необходимо быть подписанным на следующие каналы:\r\n    \r\n❗Не забудьте нажать кнопку «Проверить подписки»\"\"\",\r\n                         reply_markup=await kb.inline_subscribes())\r\n\r\n\r\n@router.message(F.text == '\uD83D\uDCF0Новости')\r\nasync def set_message_list(message: Message):\r\n    y, mo, d, h, mi, s = map(int, re.split(r\"[- :]\", read_config()['newsletter']['date']))\r\n    if datetime(*list([y, mo, d, h, mi, s])) > datetime.now():\r\n        y, mo, d, h, mi, s = re.split(r\"[- :]\", str(datetime(y, mo, d, h, mi, s) + timedelta(hours=3)))\r\n        await message.answer(f\"\"\"Следующая рассылка запланирована на {d}.{mo}.{y} в {h}:{mi} по МСК\"\"\",\r\n                             reply_markup=kb.user_keyboard)\r\n    else:\r\n        await message.answer(f\"\"\"Рассылка ещё не запланирована.\"\"\",\r\n                             reply_markup=kb.user_keyboard)\r\n\r\n\r\n@router.message(F.text == 'ℹ\uFE0FИнфо')\r\nasync def set_message_list(message: Message):\r\n    await message.answer(f\"\"\"\r\nАнглийский для взрослых и подростков ✨\r\n\r\nЗдесь Вы сможете найти:\r\n\uD83D\uDFE3 Дополнительные материалы для себя, будь Вы преподавателем или учащимся\r\n\r\nОсновной канал - @engncity:\r\n\uD83D\uDFE3 Вдохновение\r\n\uD83D\uDFE3 Разглагольствования о жизни и преподавании\r\n\r\nПо всем вопросам обращаться: @lilith_slip\"\"\",\r\n                         reply_markup=kb.user_keyboard)\r\n\r\n\r\n@router.message(F.text == 'Выйти')\r\nasync def back(message: Message):\r\n    await message.answer(text=\"Основное меню:\", reply_markup=kb.user_keyboard)\r\n\r\n\r\n@router.callback_query(F.data == 'check')\r\nasync def subscribe(callback: CallbackQuery):\r\n    try:\r\n        if await check_subscriptions(callback):\r\n            y, mo, d, h, mi, s = map(int, re.split(r\"[- :]\", read_config()['newsletter']['date']))\r\n            print(str(datetime(y, mo, d, h, mi, s) + timedelta(hours=3)))\r\n            write_user(callback.from_user.id)\r\n            y, mo, d, h, mi, s = re.split(r\"[- :]\", str(datetime(y, mo, d, h, mi, s) + timedelta(hours=3)))\r\n            await callback.message.answer(\r\n                f\"\"\"Спасибо за подписки \uD83D\uDC9C\r\nБот пришлет материалы {d}.{mo}.{y} в {h}:{mi}\r\n\r\n❗\uFE0FНе отменяйте подписки, иначе бот не пришлет Вам материалы \"\"\")\r\n        else:\r\n            await callback.message.answer(\"Вы не подписаны на каналы. Пожалуйста, подпишитесь для доступа к рассылке.\")\r\n    except TelegramBadRequest as e:\r\n        print(e)\r\n\r\n\r\n@router.callback_query(F.data.startswith('user'))\r\nasync def del_admin(callback: CallbackQuery):\r\n    data = read_config()\r\n    if callback.data.split(\": \")[1] not in [\"Mrkykypy3a\", \"lilith_sl\"]:\r\n        data[\"Admins\"].remove(callback.data.split(\": \")[1])\r\n        write_config(data)\r\n        await callback.message.answer(f'Админ удёлён', reply_markup=await kb.inline_admins())\r\n    else:\r\n        await callback.message.answer(f'Их нельзя удалять!', reply_markup=await kb.inline_admins())\r\n\r\n\r\n@router.callback_query(F.data == 'append')\r\nasync def write_admin(callback: CallbackQuery, state: FSMContext):\r\n    await state.set_state(Admin.login)\r\n    await callback.message.answer(\"Введите логин нового админа:\")\r\n\r\n\r\n@router.message(Admin.login)\r\nasync def add_admin(message: Message, state: FSMContext):\r\n    await state.update_data(login=message.text)\r\n    data = read_config()\r\n    login = await state.get_data()\r\n    data[\"Admins\"].append(login[\"login\"])\r\n    write_config(data)\r\n    await state.clear()\r\n    await message.answer(f'Админ добавлен', reply_markup=await kb.inline_admins())\r\n\r\n\r\n@router.message(F.text == '✏\uFE0FИзменить рассылку')\r\nasync def edit_message_list(message: Message, state: FSMContext):\r\n    if message.from_user.username in read_config()[\"Admins\"]:\r\n        await state.set_state(Newsletter.subscription)\r\n        await message.answer(f\"\"\"Введите ссылки на каналы через пробел на которые нужно подписаться:\\n\"\"\")\r\n    else:\r\n        await message.answer(f'Ты не админ\uD83D\uDE21')\r\n\r\n\r\n@router.message(Newsletter.subscription)\r\nasync def write_link(message: Message, state: FSMContext):\r\n    await state.update_data(subscription=message.text)\r\n    await state.set_state(Newsletter.link)\r\n    await message.answer(\"Введите ссылку на материалы:\")\r\n\r\n\r\n@router.message(Newsletter.link)\r\nasync def write_link(message: Message, state: FSMContext):\r\n    await state.update_data(link=message.text)\r\n    await state.set_state(Newsletter.data)\r\n    await message.answer(\"\"\"Введите дату рассылки:\\n\r\nФормат даты (МСК): Год Месяц День Час Минуты\"\"\")\r\n\r\n\r\n@router.message(Newsletter.data)\r\nasync def edit_message_list(message: Message, state: FSMContext):\r\n    await state.update_data(date=message.text)\r\n    config = read_config()\r\n    data = await state.get_data()\r\n    try:\r\n        temp = dict()\r\n        for elem in data['subscription'].split(' '):\r\n            name = elem[elem.rfind('/') + 1:]\r\n            temp[name] = elem\r\n        config[\"newsletter\"][\"subscription\"] = temp\r\n        config[\"newsletter\"][\"link\"] = data['link']\r\n        today = datetime.now()\r\n        y, mo, d, h, mi = list(map(int, (data['date']).split(' ')))\r\n        custom_date = datetime(y, mo, d, h, mi) - timedelta(hours=3)\r\n        y, mo, d, h, mi = data['date'].split(' ')\r\n        if custom_date < today:\r\n            raise\r\n        config[\"newsletter\"][\"date\"] = str(custom_date)\r\n        write_config(config)\r\n        print(data['date'])\r\n        with open(\"data/users.txt\", \"r\", encoding='utf-8') as f:\r\n            users = list(map(str.strip, f.readlines()))\r\n            for user_id in users:\r\n                await message.bot.send_message(text=f\"\"\"УРА! Готовы новые материалы для рассылки!\r\nПодпишись на новую рассылку которая запланирована на:\r\n{d}.{mo}.{y} в {h}:{mi} по МСК\"\"\",\r\n                                               chat_id=user_id)\r\n        with open(\"data/users.txt\", \"w\", encoding='utf-8') as f:\r\n            f.write('')\r\n\r\n        scheduler.remove_all_jobs()\r\n        scheduler.add_job(send_newsletter_everyone, 'date', run_date=str(custom_date))\r\n        await message.answer(f'Рассылка настроена', reply_markup=kb.admin_keyboard)\r\n    except Exception as e:\r\n        print(e)\r\n        await message.answer('Некорректные данные')\r\n    await state.clear()\r\n\r\n\r\n@router.message(F.text == '\uFE0F\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC66\u200D\uD83D\uDC66Отправить рассылку всем (в случае если произошёл сбой)')\r\nasync def sand_all(message: Message):\r\n    scheduler.add_job(send_newsletter_everyone, 'date', run_date=str(datetime.now() + timedelta(seconds=5)))\r\n    await message.answer(f\"\"\"Через 5 секунд придёт рассылка\"\"\")\r\n\r\n\r\n@router.message(F.text == '\uFE0F❓Узнать количество людей оформивших подписку')\r\nasync def check_people(message: Message):\r\n    with open(\"data/users.txt\", 'r', encoding='utf-8') as f:\r\n        await message.answer(f\"{len(f.readlines())} Подписалось на рассылку\")\r\n\r\n\r\n@router.message(F.text == 'Выгрузить')\r\nasync def backup(message: Message):\r\n    if message.from_user.username in read_config()[\"Admins\"]:\r\n        await message.answer_document(document=FSInputFile(path='data/users.txt'))\r\n        await message.answer_document(document=FSInputFile(path='data/newsletter.json'))\r\n    else:\r\n        await message.answer(f'Ты не админ\uD83D\uDE21')\r\n\r\n\r\n# @router.message(F.text == 'Отправить рассылку конкретному человеку')\r\n# async def sand_all(message: Message, state: FSMContext):\r\n#     await state.set_state(People.login)\r\n#     await message.answer(\"Введите логин человека, которому нужно отправить рассылку:\")\r\n\r\n\r\n@router.message(People.login)\r\nasync def send_newsletter(message: Message, state: FSMContext):\r\n    scheduler.add_job(send_newsletter_one, 'date',\r\n                      run_date=str(datetime.now() + timedelta(seconds=5)),\r\n                      args=[message.text])\r\n    await message.answer(f\"\"\"Через 5 секунд придёт рассылка\"\"\")\r\n    await state.clear()\r\n\r\n\r\n@router.message()\r\nasync def handle_unmatched_message(message: Message):\r\n    await message.answer(\"Извините, я не понимаю это сообщение.\", reply_markup=kb.user_keyboard)\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/handlers.py b/app/handlers.py
+--- a/app/handlers.py	(revision 973c858a836bd9c333be2a081dea2ae96a138d39)
++++ b/app/handlers.py	(date 1738282270919)
+@@ -186,18 +186,21 @@
+         y, mo, d, h, mi = list(map(int, (data['date']).split(' ')))
+         custom_date = datetime(y, mo, d, h, mi) - timedelta(hours=3)
+         y, mo, d, h, mi = data['date'].split(' ')
++        await message.answer(f'{custom_date}, {today}')
+         if custom_date < today:
+-            raise
++            raise "Некорректная дата"
+         config["newsletter"]["date"] = str(custom_date)
+         write_config(config)
+         print(data['date'])
+         with open("data/users.txt", "r", encoding='utf-8') as f:
+             users = list(map(str.strip, f.readlines()))
+             for user_id in users:
+-                await message.bot.send_message(text=f"""УРА! Готовы новые материалы для рассылки!
++                try:
++                    await message.bot.send_message(text=f"""УРА! Готовы новые материалы для рассылки!
+ Подпишись на новую рассылку которая запланирована на:
+-{d}.{mo}.{y} в {h}:{mi} по МСК""",
+-                                               chat_id=user_id)
++{d}.{mo}.{y} в {h}:{mi} по МСК""", chat_id=user_id)
++                except:
++                    await message.answer(f'Пидорас с id {user_id} кинул бота в ЧС')
+         with open("data/users.txt", "w", encoding='utf-8') as f:
+             f.write('')
+ 
+@@ -205,7 +208,6 @@
+         scheduler.add_job(send_newsletter_everyone, 'date', run_date=str(custom_date))
+         await message.answer(f'Рассылка настроена', reply_markup=kb.admin_keyboard)
+     except Exception as e:
+-        print(e)
+         await message.answer('Некорректные данные')
+     await state.clear()
+ 
+@@ -237,13 +239,13 @@
+ #     await message.answer("Введите логин человека, которому нужно отправить рассылку:")
+ 
+ 
+-@router.message(People.login)
+-async def send_newsletter(message: Message, state: FSMContext):
+-    scheduler.add_job(send_newsletter_one, 'date',
+-                      run_date=str(datetime.now() + timedelta(seconds=5)),
+-                      args=[message.text])
+-    await message.answer(f"""Через 5 секунд придёт рассылка""")
+-    await state.clear()
++# @router.message(People.login)
++# async def send_newsletter(message: Message, state: FSMContext):
++#     scheduler.add_job(send_newsletter_one, 'date',
++#                       run_date=str(datetime.now() + timedelta(seconds=5)),
++#                       args=[message.text])
++#     await message.answer(f"""Через 5 секунд придёт рассылка""")
++#     await state.clear()
+ 
+ 
+ @router.message()
+Index: create_bot.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from aiogram import Bot, Dispatcher\r\nfrom functions import read_user, read_config\r\nfrom dotenv import load_dotenv\r\nimport os\r\n\r\nload_dotenv()\r\nAPI_TOKEN = os.getenv(\"API_TOKEN\")\r\n\r\nbot = Bot(token=API_TOKEN)\r\ndp = Dispatcher()\r\n\r\n\r\nasync def check_subscriptions(user_id):\r\n    try:\r\n        subscription = read_config()[\"newsletter\"][\"subscription\"]\r\n        for chanel in subscription:\r\n            member = await bot.get_chat_member(chat_id=\"@\" + chanel, user_id=user_id)\r\n            if member.status not in [\"member\", \"administrator\", \"creator\"]:\r\n                return False\r\n        return True\r\n    except Exception as e:\r\n        print(e)\r\n\r\n\r\nasync def send_newsletter_everyone():\r\n    users = read_user()\r\n    for user_id in users:\r\n        try:\r\n            if await check_subscriptions(user_id):\r\n                malling_list = read_config()['newsletter']\r\n                await bot.send_message(text=f\"\"\"Здравствуйте! Ловите материалы:\r\n{malling_list['link']}\r\nСпасибо за участие! \uD83D\uDC9C\"\"\", chat_id=user_id)\r\n            else:\r\n                await bot.send_message(text=\"Извините, но вы не подписаны на каналы\uD83D\uDE12\",\r\n                                       chat_id=user_id)\r\n                await bot.send_message(text=f\"{user_id} не получил рассылку из-за того что не подписан на канал\",\r\n                                       chat_id='1425132540')\r\n        except Exception as e:\r\n            print(e)\r\n\r\n\r\nasync def send_newsletter_one(user_id):\r\n    try:\r\n        if await check_subscriptions(user_id):\r\n            malling_list = read_config()['newsletter']\r\n            await bot.send_message(text=f\"\"\"Здравствуйте! Ловите материалы:\r\n{malling_list['link']}\r\nСпасибо за участие! \uD83D\uDC9C\"\"\", chat_id=user_id)\r\n        else:\r\n            await bot.send_message(text=\"Извините, но вы не подписаны на каналы\uD83D\uDE12\",\r\n                                   chat_id=user_id)\r\n            await bot.send_message(text=f\"{user_id} не получил рассылку из-за того что не подписан на канал\",\r\n                                   chat_id='1425132540')\r\n    except Exception:\r\n        print(e)\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/create_bot.py b/create_bot.py
+--- a/create_bot.py	(revision 973c858a836bd9c333be2a081dea2ae96a138d39)
++++ b/create_bot.py	(date 1738282270957)
+@@ -52,5 +52,5 @@
+                                    chat_id=user_id)
+             await bot.send_message(text=f"{user_id} не получил рассылку из-за того что не подписан на канал",
+                                    chat_id='1425132540')
+-    except Exception:
++    except Exception as e:
+         print(e)
