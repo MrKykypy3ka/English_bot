@@ -34,8 +34,8 @@ async def send_newsletter_everyone():
             else:
                 await bot.send_message(text="Извините, но вы не подписаны на каналы😒",
                                        chat_id=user_id)
-                await bot.send_message(text=f"{user_id} не получил рассылку из-за того что не подписан на канал",
-                                       chat_id='1425132540')
+                # await bot.send_message(text=f"{user_id} не получил рассылку из-за того что не подписан на канал",
+                #                        chat_id='1425132540')
         except Exception as e:
             print(e)
 
@@ -50,7 +50,7 @@ async def send_newsletter_one(user_id):
         else:
             await bot.send_message(text="Извините, но вы не подписаны на каналы😒",
                                    chat_id=user_id)
-            await bot.send_message(text=f"{user_id} не получил рассылку из-за того что не подписан на канал",
-                                   chat_id='1425132540')
+            # await bot.send_message(text=f"{user_id} не получил рассылку из-за того что не подписан на канал",
+            #                        chat_id='1425132540')
     except Exception as e:
         print(e)

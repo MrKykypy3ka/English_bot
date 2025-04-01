@@ -150,7 +150,7 @@ async def add_admin(message: Message, state: FSMContext):
 async def edit_message_list(message: Message, state: FSMContext):
     if message.from_user.username in read_config()["Admins"]:
         await state.set_state(Newsletter.subscription)
-        await message.answer(f"""Введите ссылки на каналы через пробел на которые нужно подписаться:\n""")
+        await message.answer(f"""Введите ссылки на каналы в формате:\nлогин ссылка\nЛогин ссылка\n""")
     else:
         await message.answer(f'Ты не админ😡')
 
@@ -177,9 +177,10 @@ async def edit_message_list(message: Message, state: FSMContext):
     data = await state.get_data()
     try:
         temp = dict()
-        for i, elem in enumerate(data['subscription'].split(' ')):
-            name = f'Канал №{i+1}'
-            temp[name] = elem
+        print(data['subscription'])
+        for elem in data['subscription'].split('\n'):
+            username, url = elem.split()
+            temp[username] = url
         config["newsletter"]["subscription"] = temp
         config["newsletter"]["link"] = data['link']
         today = datetime.now()
@@ -210,6 +211,16 @@ async def edit_message_list(message: Message, state: FSMContext):
     except Exception as e:
         await message.answer('Некорректные данные')
     await state.clear()
+
+async def get_chat_id_from_invite_link(bot, invite_link):
+    try:
+        invite_info = await bot.check_chat_invite_link(invite_link)
+        chat_id = invite_info.chat_id
+        return chat_id
+    except Exception as e:
+        print(f"Ошибка при получении chat_id из {invite_link}: {e}")
+        return None
+
 
 
 @router.message(F.text == '️👨‍👩‍👦‍👦Отправить рассылку всем (в случае если произошёл сбой)')
