@@ -177,8 +177,8 @@ async def edit_message_list(message: Message, state: FSMContext):
     data = await state.get_data()
     try:
         temp = dict()
-        for elem in data['subscription'].split(' '):
-            name = elem[elem.rfind('/') + 1:]
+        for i, elem in enumerate(data['subscription'].split(' ')):
+            name = f'Канал №{i+1}'
             temp[name] = elem
         config["newsletter"]["subscription"] = temp
         config["newsletter"]["link"] = data['link']
